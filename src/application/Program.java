@@ -15,7 +15,10 @@ public class Program {
         SellerDAO sellerDAO = DAOFactory.createSellerDAO();
 
         Seller seller = sellerDAO.findById(2);
-        List<Seller> sellers = sellerDAO.findByDepartment(new Department(4));
+        System.out.println(seller);
+        System.out.println();
+
+        List<Seller> sellers = sellerDAO.findAll();
         for(Seller sell: sellers){
             System.out.println(sell);
         }

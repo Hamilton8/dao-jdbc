@@ -42,7 +42,7 @@ public class SellerDAOJDBC implements SellerDAO {
         ResultSet resultSet = null;
         try {
             preparedStatement = connection.prepareStatement("SELECT seller.*, department.Name " +
-                    "AS NameDep " +
+                    "AS DepName " +
                     "FROM seller INNER JOIN department " +
                     "ON seller.DepartmentId = department.ID " +
                     "WHERE seller.Id = ?");
@@ -74,13 +74,36 @@ public class SellerDAOJDBC implements SellerDAO {
     private Department instatiateDepartment(ResultSet resultSet) throws SQLException{
         Department department = new Department();
         department.setId(resultSet.getInt("ID"));
-        department.setName(resultSet.getString("Name"));
+        department.setName(resultSet.getString("DepName"));
         return department;
     }
 
     @Override
     public List<Seller> findAll() {
-        return List.of();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try{
+            Map<Integer, Department> map = new HashMap<>();
+            preparedStatement = connection.prepareStatement("SELECT seller.*,department.Name " +
+                    "AS DepName " +
+                    "FROM seller INNER JOIN department " +
+                    "ON seller.DepartmentId =department.ID " +
+                    "ORDER BY Name");
+            resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()){
+                Department department = map.get(resultSet.getInt("DepartmentId"));
+                if(department == null){
+                    department = instatiateDepartment(resultSet);
+                    map.put(department.getId(),department);
+                }
+                Seller seller = instatiateSeller(resultSet,department);
+                sellers.add(seller);
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return sellers;
     }
 
     @Override
@@ -89,7 +112,7 @@ public class SellerDAOJDBC implements SellerDAO {
         ResultSet resultSet = null;
         try{
             preparedStatement = connection.prepareStatement("SELECT seller.*, department.Name " +
-                    "AS NameDep " +
+                    "AS DepName " +
                     "FROM seller INNER JOIN department " +
                     "ON seller.DepartmentId = department.ID " +
                     "WHERE DepartmentId = ? ORDER BY Name");
