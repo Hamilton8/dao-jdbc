@@ -6,16 +6,16 @@ import model.dao.SellerDAO;
 import model.entities.Department;
 import model.entities.Seller;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.sql.Date;
+import java.time.Instant;
 import java.util.*;
 
 public class SellerDAOJDBC implements SellerDAO {
 
     private Connection connection;
     private List<Seller> sellers = new ArrayList<>();
+    Scanner input = new Scanner(System.in);
 
     public SellerDAOJDBC(Connection connection){
         this.connection = connection;
@@ -23,6 +23,33 @@ public class SellerDAOJDBC implements SellerDAO {
 
     @Override
     public void insert(Seller seller) {
+        PreparedStatement preparedStatement=null;
+        try{
+             preparedStatement = connection.prepareStatement(
+                     "INSERT INTO seller "
+                             + "(Name,Email,birthDate,baseSalary,DepartmentId) "
+                             + "VALUES (?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
+             preparedStatement.setString(1,seller.getName());
+             preparedStatement.setString(2, seller.getEmail());
+             preparedStatement.setDate(3, new Date(seller.getBirthDate().getTime()));
+             preparedStatement.setDouble(4,seller.getBaseSalary());
+             preparedStatement.setInt(5,seller.getDepartment().getId());
+
+             int rowsAffected = preparedStatement.executeUpdate();
+             if(rowsAffected>0){
+                 ResultSet resultSet = preparedStatement.getGeneratedKeys();
+                 if(resultSet.next()){
+                     int id = resultSet.getInt(1);
+                     seller.setId(id);
+                 }
+                 DB.closeResultSet(resultSet);
+             }else{
+                 throw new DbException("Somethin' is wrong! NO ROWS AFFECTED...");
+             }
+
+        }catch (SQLException e){
+            throw new DbException(e.getMessage());
+        }
 
     }
 

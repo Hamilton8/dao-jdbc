@@ -22,5 +22,9 @@ public class Program {
         for(Seller sell: sellers){
             System.out.println(sell);
         }
+
+        Seller newSeller = new Seller(null, "Cristiano Ronaldo", "ronaldo@gmail.com",new Date(),5000.00,new Department(2));
+        sellerDAO.insert(newSeller);
+        System.out.println(newSeller.getId());
     }
 }
