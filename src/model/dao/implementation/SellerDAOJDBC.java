@@ -13,7 +13,7 @@ import java.util.*;
 
 public class SellerDAOJDBC implements SellerDAO {
 
-    private Connection connection;
+    private Connection connection = null;
     private List<Seller> sellers = new ArrayList<>();
     Scanner input = new Scanner(System.in);
 
@@ -44,19 +44,22 @@ public class SellerDAOJDBC implements SellerDAO {
                  }
                  DB.closeResultSet(resultSet);
              }else{
-                 throw new DbException("Somethin' is wrong! NO ROWS AFFECTED...");
+                 throw new DbException("Something is wrong! NO ROWS AFFECTED...");
              }
 
         }catch (SQLException e){
             throw new DbException(e.getMessage());
+        }finally {
+            DB.closeStatement(preparedStatement);
         }
 
     }
 
     @Override
     public void update(Seller seller) {
+        PreparedStatement preparedStatement=null;
         try{
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE seller " +
+            preparedStatement = connection.prepareStatement("UPDATE seller " +
                     "SET Name=?, Email=?, birthDate=?, baseSalary=?, DepartmentId=? WHERE ID=?",Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, seller.getName());
             preparedStatement.setString(2, seller.getEmail());
@@ -69,16 +72,33 @@ public class SellerDAOJDBC implements SellerDAO {
             if (rowsAffected>0){
                 System.out.println("SELLER UPDATED SUCCESSFULLY!");
             }else{
-                throw new DbException("Somethin' is Wrong! SELLER NOT UPDATED...");
+                throw new DbException("Something is Wrong! SELLER NOT UPDATED...");
             }
         }catch (SQLException e){
             throw new DbException(e.getMessage());
+        }finally {
+            DB.closeStatement(preparedStatement);
         }
     }
 
     @Override
     public void deleteById(int id) {
-
+        PreparedStatement preparedStatement = null;
+        try{
+            preparedStatement = connection.prepareStatement(
+                    "DELETE FROM seller WHERE ID=?");
+            preparedStatement.setInt(1,id);
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected>0){
+                System.out.println("SELLER DELETED SUCCESSFULLY!");
+            }else {
+                throw new DbException("Something went wrong! SELLER NOT DELETED...");
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        }finally {
+            DB.closeStatement(preparedStatement);
+        }
     }
 
     @Override
@@ -102,6 +122,9 @@ public class SellerDAOJDBC implements SellerDAO {
             return null;
         }catch(SQLException e){
             throw new DbException(e.getMessage());
+        }finally {
+            DB.closeResultSet(resultSet);
+            DB.closeStatement(preparedStatement);
         }
     }
 
@@ -147,6 +170,9 @@ public class SellerDAOJDBC implements SellerDAO {
             }
         }catch (SQLException e){
             throw new RuntimeException(e);
+        }finally {
+           DB.closeResultSet(resultSet);
+           DB.closeStatement(preparedStatement);
         }
         return sellers;
     }

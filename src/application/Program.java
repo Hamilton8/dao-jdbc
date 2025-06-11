@@ -26,5 +26,7 @@ public class Program {
         Seller newSeller = new Seller(8, "Patty", "pat@gmail.com",new Date(),4000.00,new Department(4));
         sellerDAO.update(newSeller);
         System.out.println(newSeller.getId());
+
+        sellerDAO.deleteById(8);
     }
 }
