@@ -23,8 +23,8 @@ public class Program {
             System.out.println(sell);
         }
 
-        Seller newSeller = new Seller(null, "Cristiano Ronaldo", "ronaldo@gmail.com",new Date(),5000.00,new Department(2));
-        sellerDAO.insert(newSeller);
+        Seller newSeller = new Seller(8, "Patty", "pat@gmail.com",new Date(),4000.00,new Department(4));
+        sellerDAO.update(newSeller);
         System.out.println(newSeller.getId());
     }
 }
